@@ -7,9 +7,9 @@ from io import StringIO
 # Firebase başlat
 if not firebase_admin._apps:
     cred = firebase_json = st.secrets["firebase_json"]
-cred_dict = json.load(StringIO(firebase_json))
-cred = credentials.Certificate(cred_dict)
-firebase_admin.initialize_app(cred)
+    cred_dict = json.load(StringIO(firebase_json))
+    cred = credentials.Certificate(cred_dict)
+    firebase_admin.initialize_app(cred)
 db = firestore.client()
     firebase_admin.initialize_app(cred)
 db = firestore.client()
