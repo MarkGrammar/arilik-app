@@ -16,6 +16,10 @@ db = firestore.client()
 
 st.title("📦 Günlük Alımlar")
 
+# Ürün ID → İsim eşlemesi için tüm ürünleri çek
+product_docs = db.collection("products").stream()
+product_dict = {doc.id: doc.to_dict().get("name", "Bilinmeyen Ürün") for doc in product_docs}
+
 # Tüm alış kayıtlarını çek
 docs = db.collection("purchases").stream()
 
@@ -27,7 +31,8 @@ for doc in docs:
     if "items" in data:
         total = 0
         for item in data["items"]:
-            st.write(f"- {item['product_id']} → {item['quantity']} adet → {item['total_price']}₺")
+            product_name = product_dict.get(item["product_id"], item["product_id"])
+            st.write(f"- {product_name} → {item['quantity']} adet → {item['total_price']}₺")
             total += item['total_price']
         st.write(f"**Toplam: {total}₺**")
 
