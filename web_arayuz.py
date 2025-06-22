@@ -57,7 +57,7 @@ with st.expander("add_product"):
         if product_id and name:
             db.collection("products").document(product_id).set({
                 "name": name,
-                "unit_price": unit_price
+                "unit_price": unit_price,
                 "category": category
             })
             st.success(f"{name} ({category}) eklendi.")
