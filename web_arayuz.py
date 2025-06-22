@@ -45,19 +45,20 @@ for doc in docs:
 st.title("Ürün Yönetimi")
 
 # Ürün ekleme
-with st.expander("add_product"):
-    st.subheader("➕ Yeni Ürün Ekle")
-    product_id = st.text_input("Ürün ID:")
-    type = st.text_input("Ürün Türü")
-    name = st.text_input("Ürün Adı:")
-    unit_price = st.number_input("Birim Fiyat (₺)", min_value=0.0, step=0.1)
-    submitted = st.form_submit_button("Ürünü Ekle")
+with st.expander("➕ Yeni Ürün Ekle"):
+    with st.form("urun_ekle_formu"):
+        st.subheader("Yeni Ürün Ekle")
 
-    if submitted:
-        if product_id and name:
+        product_id = st.text_input("Ürün ID (benzersiz):", key="id")
+        name = st.text_input("Ürün Adı:", key="ad")
+        price = st.number_input("Birim Fiyat (₺)", min_value=0.0, step=0.5, key="fiyat")
+        category = st.text_input("Ürün Türü (örnek: Ekmek, Temizlik...)", key="kategori")
+
+        submitted = st.form_submit_button("Ürünü Ekle")
+        if submitted:
             db.collection("products").document(product_id).set({
                 "name": name,
-                "unit_price": unit_price,
+                "price": price,
                 "category": category
             })
             st.success(f"{name} ({category}) eklendi.")
