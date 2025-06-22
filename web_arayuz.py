@@ -50,10 +50,10 @@ with st.expander("➕ Yeni Ürün Ekle"):
     with st.form("urun_ekle_formu"):
         st.subheader("Yeni Ürün Ekle")
 
-        product_id = st.text_input("Ürün ID (benzersiz):", key="id")
+        product_id = st.text_input("Ürün ID:", key="id")
         name = st.text_input("Ürün Adı:", key="ad")
         price = st.number_input("Birim Fiyat (₺)", min_value=0.0, step=0.5, key="fiyat")
-        category = st.text_input("Ürün Türü (örnek: Ekmek, Temizlik...)", key="kategori")
+        category = st.text_input("Ürün Türü", key="kategori")
 
         submitted = st.form_submit_button("Ürünü Ekle")
         if submitted:
