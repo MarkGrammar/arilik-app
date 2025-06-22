@@ -45,9 +45,10 @@ for doc in docs:
 st.title("Ürün Yönetimi")
 
 # Ürün ekleme
-with st.form("add_product"):
+with st.expander("add_product"):
     st.subheader("➕ Yeni Ürün Ekle")
-    product_id = st.text_input("Ürün ID (benzersiz):")
+    product_id = st.text_input("Ürün ID:")
+    type = st.text_input("Ürün Türü")
     name = st.text_input("Ürün Adı:")
     unit_price = st.number_input("Birim Fiyat (₺)", min_value=0.0, step=0.1)
     submitted = st.form_submit_button("Ürünü Ekle")
@@ -57,8 +58,9 @@ with st.form("add_product"):
             db.collection("products").document(product_id).set({
                 "name": name,
                 "unit_price": unit_price
+                "category": category
             })
-            st.success(f"{name} eklendi.")
+            st.success(f"{name} ({category}) eklendi.")
             st.rerun()
         else:
             st.error("Lütfen tüm alanları doldurun.")
