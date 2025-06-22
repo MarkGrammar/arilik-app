@@ -58,7 +58,7 @@ with st.expander("➕ Yeni Ürün Ekle"):
         if submitted:
             db.collection("products").document(product_id).set({
                 "name": name,
-                "price": price,
+                "unit_price": price,
                 "category": category
             })
             st.success(f"{name} ({category}) eklendi.")
@@ -75,15 +75,15 @@ for product in products:
     pid = product.id
     pdata = product.to_dict()
 
-    with st.expander(f"{pdata['name']} - {pdata['price']}₺"):
+    with st.expander(f"{pdata['name']} - {pdata['unit_price']}₺"):
         new_name = st.text_input(f"Ad (ID: {pid})", value=pdata["name"], key=f"name_{pid}")
-        new_price = st.number_input(f"Fiyat", value=pdata["price"], key=f"price_{pid}")
+        new_price = st.number_input(f"Fiyat", value=pdata["unit_price"], key=f"unit_price_{pid}")
         col1, col2 = st.columns(2)
         with col1:
             if st.button("💾 Güncelle", key=f"update_{pid}"):
                 db.collection("products").document(pid).update({
                     "name": new_name,
-                    "price": new_price
+                    "unit_price": new_price
                 })
                 st.success("Güncellendi.")
                 st.experimental_rerun()
