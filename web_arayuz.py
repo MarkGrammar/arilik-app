@@ -3,6 +3,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import json
 from io import StringIO
+import datetime
 
 # Firebase başlat
 if not firebase_admin._apps:
