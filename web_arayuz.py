@@ -6,15 +6,13 @@ from io import StringIO
 
 # Firebase başlat
 if not firebase_admin._apps:
-    cred = firebase_json = st.secrets["firebase_json"]
-cred_dict = json.load(StringIO(firebase_json))
-cred = credentials.Certificate(cred_dict)
-firebase_admin.initialize_app(cred)
-db = firestore.client()
-
+    firebase_json = st.secrets["firebase_json"]
+    cred_dict = json.load(StringIO(firebase_json))
+    cred = credentials.Certificate(cred_dict)
+    firebase_admin.initialize_app(cred)
+    db = firestore.client()
 
 st.title("📦 Günlük Alımlar")
-
 
 # Tüm alış kayıtlarını çek
 docs = db.collection("purchases").stream()
@@ -35,6 +33,6 @@ for doc in docs:
     if data.get("paid"):
         st.success("✅ Ödenmiş")
     else:
-        if st.button(f" Ödendi olarak işaretle ({tarih})"):
+        if st.button(f"💸 Ödendi olarak işaretle ({tarih})"):
             db.collection("purchases").document(tarih).update({"paid": True})
             st.experimental_rerun()
