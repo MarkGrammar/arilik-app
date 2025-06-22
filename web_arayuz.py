@@ -44,7 +44,7 @@ for doc in docs:
 
 st.title("Ürün Yönetimi")
 
-# Ürün ekleme
+# ➕ Ürün ekleme paneli
 with st.expander("➕ Yeni Ürün Ekle"):
     with st.form("urun_ekle_formu"):
         st.subheader("Yeni Ürün Ekle")
@@ -56,17 +56,18 @@ with st.expander("➕ Yeni Ürün Ekle"):
 
         submitted = st.form_submit_button("Ürünü Ekle")
         if submitted:
-            db.collection("products").document(product_id).set({
-                "name": name,
-                "unit_price": price,
-                "category": category
-            })
-            st.success(f"{name} ({category}) eklendi.")
-            st.rerun()
-        else:
-            st.error("Lütfen tüm alanları doldurun.")
+            if product_id and name and category:
+                db.collection("products").document(product_id).set({
+                    "name": name,
+                    "price": price,
+                    "category": category
+                })
+                st.success(f"{name} ({category}) eklendi.")
+                st.rerun()
+            else:
+                st.error("Lütfen tüm alanları doldurun.")
 
-# Ürünleri listele ve güncelle/sil
+# 📋 Mevcut ürünleri göster
 st.subheader("📋 Mevcut Ürünler")
 
 products = db.collection("products").stream()
@@ -75,15 +76,18 @@ for product in products:
     pid = product.id
     pdata = product.to_dict()
 
-    with st.expander(f"{pdata['name']} - {pdata['unit_price']}₺"):
+    with st.expander(f"{pdata['name']} - {pdata['price']}₺"):
         new_name = st.text_input(f"Ad (ID: {pid})", value=pdata["name"], key=f"name_{pid}")
-        new_price = st.number_input(f"Fiyat", value=pdata["unit_price"], key=f"unit_price_{pid}")
+        new_price = st.number_input("Fiyat", value=pdata["price"], key=f"price_{pid}")
+        new_category = st.text_input("Tür", value=pdata.get("category", ""), key=f"cat_{pid}")
+
         col1, col2 = st.columns(2)
         with col1:
             if st.button("💾 Güncelle", key=f"update_{pid}"):
                 db.collection("products").document(pid).update({
                     "name": new_name,
-                    "unit_price": new_price
+                    "price": new_price,
+                    "category": new_category
                 })
                 st.success("Güncellendi.")
                 st.experimental_rerun()
