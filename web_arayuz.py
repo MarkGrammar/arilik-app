@@ -58,7 +58,7 @@ with st.expander("➕ Yeni Ürün Ekle"):
         if submitted:
             db.collection("products").document(product_id).set({
                 "name": name,
-                "price": price,
+                "unit_price": price,
                 "category": category
             })
             st.success(f"{name} ({category}) eklendi.")
