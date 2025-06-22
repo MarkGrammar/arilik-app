@@ -42,14 +42,45 @@ for doc in docs:
 
 
 
+st.title("Ürün Yönetimi")
+
+# ➕ Ürün ekleme
+with st.expander("➕ Yeni Ürün Ekle"):
+    with st.form("urun_ekle_formu"):
+        st.subheader("Yeni Ürün Ekle")
+
+        product_id = st.text_input("Ürün ID (benzersiz):", key="id")
+        name = st.text_input("Ürün Adı:", key="ad")
+        price = st.number_input("Birim Fiyat (₺)", min_value=0.0, step=0.5, key="fiyat")
+        category = st.text_input("Ürün Türü (örnek: Ekmek, Temizlik...)", key="kategori")
+
+        submitted = st.form_submit_button("Ürünü Ekle")
+        if submitted:
+            db.collection("products").document(product_id).set({
+                "name": name,
+                "price": price,
+                "category": category
+            })
+            st.success(f"{name} ({category}) eklendi.")
+            st.rerun()
+
+# 📋 Ürünleri listele ve güncelle/sil
+st.subheader("📋 Mevcut Ürünler")
+
+products = db.collection("products").stream()
+
 for product in products:
     pid = product.id
     pdata = product.to_dict()
 
-    with st.expander(f"{pdata.get('name', 'Bilinmeyen')} - {pdata.get('price', 0)}₺"):
-        new_name = st.text_input(f"Ad (ID: {pid})", value=pdata.get("name", ""), key=f"name_{pid}")
-        new_price = st.number_input("Fiyat", value=pdata.get("price", 0.0), key=f"price_{pid}")
-        new_category = st.text_input("Tür", value=pdata.get("category", ""), key=f"cat_{pid}")
+    pname = pdata.get("name", "Bilinmeyen")
+    pprice = pdata.get("price", 0.0)
+    pcat = pdata.get("category", "")
+
+    with st.expander(f"{pname} - {pprice}₺"):
+        new_name = st.text_input(f"Ad (ID: {pid})", value=pname, key=f"name_{pid}")
+        new_price = st.number_input("Fiyat", value=pprice, key=f"price_{pid}")
+        new_category = st.text_input("Tür", value=pcat, key=f"cat_{pid}")
 
         col1, col2 = st.columns(2)
         with col1:
