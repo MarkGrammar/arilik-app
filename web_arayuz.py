@@ -36,7 +36,7 @@ for doc in docs:
     else:
         if st.button(f"💸 Ödendi olarak işaretle ({tarih})"):
             db.collection("purchases").document(tarih).update({"paid": True})
-            st.experimental_rerun()
+            st.rerun()
 
 
 
@@ -59,7 +59,7 @@ with st.form("add_product"):
                 "unit_price": unit_price
             })
             st.success(f"{name} eklendi.")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Lütfen tüm alanları doldurun.")
 
@@ -88,4 +88,4 @@ for product in products:
             if st.button("🗑️ Sil", key=f"delete_{pid}"):
                 db.collection("products").document(pid).delete()
                 st.warning("Silindi.")
-                st.experimental_rerun()
+                st.rerun()
