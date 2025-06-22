@@ -104,46 +104,41 @@ for product in products:
                 
                 
                 
-st.header("Yeni Alışveriş Girişi")
+st.title("🛒 Yeni Alışveriş Girişi")
 
 # Tarih seçimi
 tarih = st.date_input("Alışveriş Tarihi", value=datetime.date.today())
 tarih_str = tarih.isoformat()
 
-# Ürünleri çek
-urunler = list(db.collection("products").stream())
-urun_dict = {u.id: u.to_dict() for u in urunler}
+# Ürünleri firestore'dan al
+urunler = db.collection("products").stream()
+urun_listesi = {urun.id: urun.to_dict() for urun in urunler}
 
-# Alınan ürünler için liste
-st.subheader("🧾 Alınan Ürünler")
+if not urun_listesi:
+    st.warning("Henüz hiç ürün yok. Lütfen önce ürün ekleyin.")
+else:
+    with st.form("alisveris_formu"):
+        st.subheader("Ürünler")
 
-urun_secimleri = []
-for i in range(5):  # En fazla 5 ürün girişi
-    st.markdown(f"**Ürün {i+1}**")
-    cols = st.columns([3, 2, 2])
-    with cols[0]:
-        secilen_urun = st.selectbox(f"Ürün Seç", [""] + list(urun_dict.keys()), key=f"urun_{i}")
-    if secilen_urun:
-        with cols[1]:
-            adet = st.number_input("Adet", min_value=0.0, step=0.5, key=f"adet_{i}")
-        with cols[2]:
-            fiyat = urun_dict[secilen_urun]["price"]
-            toplam = fiyat * adet
-            st.write(f"Toplam: {toplam:.2f}₺")
-            urun_secimleri.append({
-                "product_id": secilen_urun,
-                "quantity": adet,
-                "total_price": toplam
-            })
+        secilen_urunler = []
+        for pid, pdata in urun_listesi.items():
+            miktar = st.number_input(f"{pdata['name']} ({pdata['price']}₺)", min_value=0.0, step=1.0, key=f"miktar_{pid}")
+            if miktar > 0:
+                secilen_urunler.append({
+                    "product_id": pid,
+                    "quantity": miktar,
+                    "unit_price": pdata["price"],
+                    "total_price": miktar * pdata["price"]
+                })
 
-# Kaydet
-if st.button("💾 Alışverişi Kaydet"):
-    if urun_secimleri:
-        db.collection("purchases").document(tarih_str).set({
-            "items": urun_secimleri,
-            "paid": False
-        })
-        st.success(f"{tarih_str} alışverişi kaydedildi.")
-        st.experimental_rerun()
-    else:
-        st.error("En az bir ürün seçmelisiniz.")
+        submitted = st.form_submit_button("Alışverişi Kaydet")
+        if submitted:
+            if secilen_urunler:
+                db.collection("purchases").document(tarih_str).set({
+                    "items": secilen_urunler,
+                    "paid": False
+                })
+                st.success("Alışveriş kaydedildi!")
+                st.rerun()
+            else:
+                st.warning("En az bir ürün miktarı girmelisiniz.")
