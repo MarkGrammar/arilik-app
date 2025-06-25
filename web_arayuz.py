@@ -14,9 +14,6 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-
-st.markdown(f"Ödenmemiş Toplam: {total_unpaid}₺")
-
 st.title("📦 Günlük Alımlar")
 
 # 🔄 Ürün adlarını çek (ID → İsim)
@@ -57,7 +54,7 @@ for doc in docs:
             db.collection("purchases").document(tarih).update({"paid": True})
             st.rerun()
 
-
+st.markdown(f"Ödenmemiş Toplam: {total_unpaid}₺")
 
 # ----------------- Ürün Yönetimi ---------------------
 st.title("Ürün Yönetimi")
