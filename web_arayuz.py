@@ -197,7 +197,7 @@ with st.expander("📋 Yapılacaklar Listesi"):
             cols[1].markdown(f"~~{todo_data['text']}~~" if done else todo_data['text'])
             if cols[2].button("🗑️", key=f"delete_{todo_id}"):
                 todo_ref.document(todo_id).delete()
-                st.experimental_rerun()
+                st.rerun()
             elif done != todo_data.get("done", False):
                 todo_ref.document(todo_id).update({"done": done})
                 st.rerun()
