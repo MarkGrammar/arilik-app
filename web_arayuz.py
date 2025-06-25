@@ -54,7 +54,7 @@ for doc in docs:
             db.collection("purchases").document(tarih).update({"paid": True})
             st.rerun()
 
-st.markdown(f"##Ödenmemiş Toplam: {total_unpaid}₺")
+st.markdown(f"##  Ödenmemiş Toplam: {total_unpaid}₺")
 
 # ----------------- Ürün Yönetimi ---------------------
 st.title("Ürün Yönetimi")
