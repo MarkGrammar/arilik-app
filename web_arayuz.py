@@ -170,31 +170,34 @@ with st.form("alisveris_formu"):
             
             
             
-st.sidebar.title("✅ Yapılacaklar Listesi")
+st.markdown("---")
+with st.expander("📋 Yapılacaklar Listesi"):
+    todo_ref = db.collection("todos")
 
-# Firestore'da yapılacaklar koleksiyonunu kontrol et
-todo_ref = db.collection("todos")
+    # Yeni görev ekleme
+    with st.form("todo_form"):
+        yeni_gorev = st.text_input("Yeni görev ekle")
+        submitted = st.form_submit_button("➕ Ekle")
+        if submitted and yeni_gorev.strip():
+            todo_ref.add({"text": yeni_gorev.strip(), "done": False})
+            st.success("Görev eklendi!")
+            st.experimental_rerun()
 
-# Yeni görev ekleme
-with st.sidebar.form("todo_form"):
-    yeni_gorev = st.text_input("Yeni görev ekle")
-    submitted = st.form_submit_button("➕ Ekle")
-    if submitted and yeni_gorev.strip():
-        todo_ref.add({"text": yeni_gorev.strip(), "done": False})
-        st.experimental_rerun()
+    # Görevleri çek ve göster
+    todos = list(todo_ref.stream())
 
-# Görevleri listele
-todos = list(todo_ref.stream())
-
-for todo in todos:
-    todo_id = todo.id
-    todo_data = todo.to_dict()
-    col1, col2 = st.sidebar.columns([0.1, 0.8])
-    checked = col1.checkbox("", value=todo_data.get("done", False), key=todo_id)
-    if checked != todo_data.get("done", False):
-        todo_ref.document(todo_id).update({"done": checked})
-        st.experimental_rerun()
-    col2.text(todo_data["text"])
-    if st.sidebar.button("🗑️", key=f"delete_{todo_id}"):
-        todo_ref.document(todo_id).delete()
-        st.experimental_rerun()
+    if not todos:
+        st.info("Henüz bir görev yok.")
+    else:
+        for todo in todos:
+            todo_id = todo.id
+            todo_data = todo.to_dict()
+            cols = st.columns([0.1, 0.7, 0.2])
+            done = cols[0].checkbox("", value=todo_data.get("done", False), key=f"check_{todo_id}")
+            cols[1].markdown(f"~~{todo_data['text']}~~" if done else todo_data['text'])
+            if cols[2].button("🗑️", key=f"delete_{todo_id}"):
+                todo_ref.document(todo_id).delete()
+                st.experimental_rerun()
+            elif done != todo_data.get("done", False):
+                todo_ref.document(todo_id).update({"done": done})
+                st.experimental_rerun()
