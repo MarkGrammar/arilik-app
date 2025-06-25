@@ -36,7 +36,7 @@ for doc in docs:
         for item in data["items"]:
             product_id = item["product_id"]
             product_name = product_dict.get(product_id, product_id)
-            st.write(f"- {product_name} → {item['quantity']} adet → {item['total_price']}₺")
+            st.write(f"- {product_name} → {item['quantity']} {item.get('unit', '')} → {item['total_price']}₺")
             total += item["total_price"]
         st.write(f"**Toplam: {total}₺**")
 
@@ -49,9 +49,6 @@ for doc in docs:
             st.rerun()
 
 
-
-
-
 st.title("Ürün Yönetimi")
 
 # ➕ Ürün ekleme
@@ -61,17 +58,19 @@ with st.expander("➕ Yeni Ürün Ekle"):
 
         product_id = st.text_input("Ürün ID:", key="id")
         name = st.text_input("Ürün Adı:", key="ad")
-        price = st.number_input("Birim Fiyat (₺)", min_value=0.0, step=0.5, key="fiyat")
-        category = st.text_input("Ürün Türü", key="kategori")
+        category = st.text_input("Genel Tür (örnek: Yiyecek, Temizlik...)", key="kategori")
+        subcategory = st.text_input("Alt Tür (örnek: Kola, Ekmek...)", key="alt_tur")
+        unit = st.text_input("Miktar Birimi (örnek: adet, kg, lt)", key="birim")
 
         submitted = st.form_submit_button("Ürünü Ekle")
         if submitted:
             db.collection("products").document(product_id).set({
                 "name": name,
-                "price": price,
-                "category": category
+                "category": category,
+                "subcategory": subcategory,
+                "unit": unit
             })
-            st.success(f"{name} ({category}) eklendi.")
+            st.success(f"{name} ({category} - {subcategory}) eklendi.")
             st.rerun()
 
 # 📋 Ürünleri listele ve güncelle/sil
@@ -84,21 +83,24 @@ for product in products:
     pdata = product.to_dict()
 
     pname = pdata.get("name", "Bilinmeyen")
-    pprice = pdata.get("price", 0.0)
     pcat = pdata.get("category", "")
+    psubcat = pdata.get("subcategory", "")
+    punit = pdata.get("unit", "")
 
-    with st.expander(f"{pname} - {pprice}₺"):
+    with st.expander(f"{pname} ({pcat} - {psubcat})"):
         new_name = st.text_input(f"Ad (ID: {pid})", value=pname, key=f"name_{pid}")
-        new_price = st.number_input("Fiyat", value=pprice, key=f"price_{pid}")
         new_category = st.text_input("Tür", value=pcat, key=f"cat_{pid}")
+        new_subcategory = st.text_input("Alt Tür", value=psubcat, key=f"subcat_{pid}")
+        new_unit = st.text_input("Birim", value=punit, key=f"unit_{pid}")
 
         col1, col2 = st.columns(2)
         with col1:
             if st.button("💾 Güncelle", key=f"update_{pid}"):
                 db.collection("products").document(pid).update({
                     "name": new_name,
-                    "price": new_price,
-                    "category": new_category
+                    "category": new_category,
+                    "subcategory": new_subcategory,
+                    "unit": new_unit
                 })
                 st.success("Güncellendi.")
                 st.experimental_rerun()
@@ -107,12 +109,8 @@ for product in products:
                 db.collection("products").document(pid).delete()
                 st.warning("Silindi.")
                 st.rerun()
-                
-                
-                
-                
-                
-                
+
+
 st.title("🛒 Yeni Alışveriş Girişi")
 
 # Tarih seçimi
@@ -131,23 +129,29 @@ else:
 
         secilen_urunler = []
         for pid, pdata in urun_listesi.items():
-            miktar = st.number_input(f"{pdata['name']} ({pdata['price']}₺)", min_value=0.0, step=1.0, key=f"miktar_{pid}")
-            if miktar > 0:
+            miktar = st.number_input(f"{pdata['name']} ({pdata.get('unit', '')})", min_value=0.0, step=1.0, key=f"miktar_{pid}")
+            fiyat = st.number_input(f"Fiyat (₺) - {pdata['name']}", min_value=0.0, step=0.5, key=f"fiyat_{pid}")
+            if miktar > 0 and fiyat > 0:
                 secilen_urunler.append({
                     "product_id": pid,
                     "quantity": miktar,
-                    "unit_price": pdata["price"],
-                    "total_price": miktar * pdata["price"]
+                    "unit": pdata.get("unit", ""),
+                    "unit_price": fiyat,
+                    "total_price": miktar * fiyat
                 })
 
         submitted = st.form_submit_button("Alışverişi Kaydet")
         if submitted:
             if secilen_urunler:
+                mevcut_veri = db.collection("purchases").document(tarih_str).get()
+                onceki_items = mevcut_veri.to_dict().get("items", []) if mevcut_veri.exists else []
+                yeni_items = onceki_items + secilen_urunler
+
                 db.collection("purchases").document(tarih_str).set({
-                    "items": secilen_urunler,
+                    "items": yeni_items,
                     "paid": False
                 })
                 st.success("Alışveriş kaydedildi!")
                 st.rerun()
             else:
-                st.warning("En az bir ürün miktarı girmelisiniz.")
+                st.warning("En az bir ürün ve fiyat girmelisiniz.")
