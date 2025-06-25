@@ -200,4 +200,4 @@ with st.expander("📋 Yapılacaklar Listesi"):
                 st.experimental_rerun()
             elif done != todo_data.get("done", False):
                 todo_ref.document(todo_id).update({"done": done})
-                st.experimental_rerun()
+                st.rerun()
