@@ -167,3 +167,34 @@ with st.form("alisveris_formu"):
             st.rerun()
         else:
             st.warning("En az bir ürün seçmelisiniz.")
+            
+            
+            
+st.sidebar.title("✅ Yapılacaklar Listesi")
+
+# Firestore'da yapılacaklar koleksiyonunu kontrol et
+todo_ref = db.collection("todos")
+
+# Yeni görev ekleme
+with st.sidebar.form("todo_form"):
+    yeni_gorev = st.text_input("Yeni görev ekle")
+    submitted = st.form_submit_button("➕ Ekle")
+    if submitted and yeni_gorev.strip():
+        todo_ref.add({"text": yeni_gorev.strip(), "done": False})
+        st.experimental_rerun()
+
+# Görevleri listele
+todos = list(todo_ref.stream())
+
+for todo in todos:
+    todo_id = todo.id
+    todo_data = todo.to_dict()
+    col1, col2 = st.sidebar.columns([0.1, 0.8])
+    checked = col1.checkbox("", value=todo_data.get("done", False), key=todo_id)
+    if checked != todo_data.get("done", False):
+        todo_ref.document(todo_id).update({"done": checked})
+        st.experimental_rerun()
+    col2.text(todo_data["text"])
+    if st.sidebar.button("🗑️", key=f"delete_{todo_id}"):
+        todo_ref.document(todo_id).delete()
+        st.experimental_rerun()
