@@ -181,7 +181,7 @@ with st.expander("📋 Yapılacaklar Listesi"):
         if submitted and yeni_gorev.strip():
             todo_ref.add({"text": yeni_gorev.strip(), "done": False})
             st.success("Görev eklendi!")
-            st.experimental_rerun()
+            st.rerun()
 
     # Görevleri çek ve göster
     todos = list(todo_ref.stream())
