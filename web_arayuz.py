@@ -14,7 +14,7 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-st.expander("📦 Günlük Alımlar")
+st.title("📦 Günlük Alımlar")
 
 # 🔄 Ürün adlarını çek (ID → İsim)
 product_docs = db.collection("products").stream()
@@ -57,7 +57,7 @@ for doc in docs:
 st.markdown(f"## 🔢 Ödenmemiş Toplam: {total_unpaid}₺")
 
 # ----------------- Ürün Yönetimi ---------------------
-st.expander("Ürün Yönetimi")
+st.title("Ürün Yönetimi")
 
 # ➕ Ürün ekleme
 with st.expander("➕ Yeni Ürün Ekle"):
@@ -117,7 +117,7 @@ for product in products:
                 st.rerun()
 
 # ----------------- Alışveriş Girişi ---------------------
-st.expander("🛒 Yeni Alışveriş Girişi")
+st.title("🛒 Yeni Alışveriş Girişi")
 
 tarih = st.date_input("Alışveriş Tarihi", value=datetime.date.today())
 tarih_str = tarih.isoformat()
