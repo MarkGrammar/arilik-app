@@ -39,7 +39,13 @@ for doc in docs:
             miktar = item.get("quantity", "?")
             fiyat = item.get("price", "?")
             market = item.get("market", "?")
-            toplam = float(miktar) * float(fiyat)
+            try:
+    miktar = float(miktar)
+    fiyat = float(fiyat)
+    toplam = miktar * fiyat
+except (TypeError, ValueError):
+    st.error(f"{urun_adı} için geçersiz miktar ya da fiyat.")
+    continue  # bu ürün atlanır, diğerleri işlenir
             st.write(f"- {product_name} → {miktar} × {fiyat}₺ → {toplam}₺ ({market})")
             total += toplam
         st.write(f"**Toplam: {total}₺**")
