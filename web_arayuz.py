@@ -25,6 +25,9 @@ product_dict = {
 
 # 📅 Tüm alışveriş kayıtlarını çek
 docs = db.collection("purchases").stream()
+
+total_unpaid = 0
+
 for doc in docs:
     tarih = doc.id
     data = doc.to_dict()
@@ -36,12 +39,13 @@ for doc in docs:
             product_id = item["product_id"]
             product_name = product_dict.get(product_id, product_id)
             miktar = item.get("quantity", "?")
-            fiyat = item.get("unit_price", "?")
+            fiyat = item.get("total_price", "?")
             market = item.get("market", "?")
-            toplam = item.get("total_price", 0)
-            st.write(f"- {product_name} ({market}) → {miktar} × {fiyat}₺ = {toplam}₺")
-            total += toplam
+            st.write(f"- {product_name} ({market}) → {miktar} adet = {fiyat}₺")
+            total += fiyat
         st.write(f"**Toplam: {total}₺**")
+        if not data.get("paid"):
+            total_unpaid += total
 
     if data.get("paid"):
         st.success("✅ Ödenmiş")
@@ -49,6 +53,8 @@ for doc in docs:
         if st.button(f"💸 Ödendi olarak işaretle ({tarih})"):
             db.collection("purchases").document(tarih).update({"paid": True})
             st.rerun()
+
+st.markdown(f"## 🔢 Ödenmemiş Toplam: {total_unpaid}₺")
 
 # ----------------- Ürün Yönetimi ---------------------
 st.title("Ürün Yönetimi")
@@ -129,19 +135,17 @@ with st.form("alisveris_formu"):
 
         with st.expander(f"{urun_adı}"):
             miktar = st.text_input(f"Miktar ({pdata.get('unit', 'adet')})", key=f"miktar_{pid}")
-            fiyat = st.text_input("Birim Fiyat (₺)", key=f"fiyat_{pid}")
+            fiyat = st.text_input("Toplam Fiyat (₺)", key=f"fiyat_{pid}")
             market = st.selectbox("Market", market_listesi, key=f"market_{pid}")
 
             if miktar and fiyat:
                 try:
                     miktar_float = float(miktar)
                     fiyat_float = float(fiyat)
-                    toplam = miktar_float * fiyat_float
                     secilen_urunler.append({
                         "product_id": pid,
                         "quantity": miktar_float,
-                        "unit_price": fiyat_float,
-                        "total_price": toplam,
+                        "total_price": fiyat_float,
                         "market": market
                     })
                 except (TypeError, ValueError):
